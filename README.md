@@ -48,7 +48,7 @@ public class AState : FSM.Base
 	}
 
 	// State entry. Supports recursive rerouting of the active state.
-	public virtual void Enter(Control control)
+	public override void Enter(Control control)
 	{
 		// Control object lets you access any state instance.
 		CState c = control.Access<CState();
@@ -68,18 +68,18 @@ public class AState : FSM.Base
 	}
 
 	// State update. Supports requesting active state changes as well.
-	public virtual void Update(Control control, SomeUpdateMode updateMode)
+	public override void Update(Control control, SomeUpdateMode updateMode)
 	{
 		if(updateMode == SomeUpdateMode.Foo)
 		{ }
 	}
 
 	// State exit. Doesn's support state changes.
-	public virtual void Leave(Control control)
+	public override void Leave(Control control)
 	{ }
 	
 	// Receive supported events in an allocation free manner.
-	public virtual void React<TEvent>(Control control, TEvent e)
+	public override void React<TEvent>(Control control, TEvent e)
 	{
 		if(e is SomeEvent some)
 		{
