@@ -16,11 +16,6 @@ namespace Beatrate.PeachFSM
 		Default = 0
 	}
 
-	/// <summary>
-	/// Hierarchical state machine.
-	/// </summary>
-	/// <typeparam name="TContext">State machine context type</typeparam>
-	/// <typeparam name="TUpdateMode">State machine update type</typeparam>
 	public class Machine<TContext, TUpdateMode>
 		where TContext : class
 		where TUpdateMode : System.Enum
@@ -48,9 +43,6 @@ namespace Beatrate.PeachFSM
 			}
 		}
 
-		/// <summary>
-		/// State machine control object.
-		/// </summary>
 		public class Control
 		{
 			public enum ChangeStatePriority
@@ -154,6 +146,7 @@ namespace Beatrate.PeachFSM
 		{
 			public TContext Context { get; private set; }
 			public virtual Type IdentifierType => GetType();
+			public virtual Base IdentifiedInstance => this;
 			public virtual bool IsComplex => false;
 
 			public EventFilter EventFilter { get; } = new EventFilter();
@@ -200,6 +193,7 @@ namespace Beatrate.PeachFSM
 
 			public override bool IsComplex => true;
 			public override Type IdentifierType => state.IdentifierType;
+			public override Base IdentifiedInstance => state;
 
 			public RootState this[Base state]
 			{
@@ -247,15 +241,13 @@ namespace Beatrate.PeachFSM
 			}
 		}
 
-		/// <summary>
-		/// State with children.
-		/// </summary>
 		public class CompositeState : Base
 		{
 			private Base topState = null;
 			private List<Base> children = new List<Base>();
 
 			public override Type IdentifierType => topState.IdentifierType;
+			public override Base IdentifiedInstance => topState;
 			public override bool IsComplex => true;
 
 			public CompositeState this[Base topState, params Base[] children]
@@ -333,8 +325,6 @@ namespace Beatrate.PeachFSM
 			Initialize();
 		}
 
-		#region State maching configuration API
-
 		public static RootState Root()
 		{
 			return new RootState();
@@ -350,12 +340,6 @@ namespace Beatrate.PeachFSM
 			return new CompositeState();
 		}
 
-		#endregion
-
-		/// <summary>
-		/// Get the current instance of specified state.
-		/// </summary>
-		/// <typeparam name="TState">State type</typeparam>
 		public TState Access<TState>() where TState : Base
 		{
 			Type stateType = typeof(TState);
@@ -367,13 +351,9 @@ namespace Beatrate.PeachFSM
 
 			Assert.IsNotNull(state);
 
-			return (TState)state;
+			return (TState)state.IdentifiedInstance;
 		}
 
-		/// <summary>
-		/// Check if specified state is active.
-		/// </summary>
-		/// <typeparam name="TState">State type</typeparam>
 		public bool IsActive<TState>() where TState : Base
 		{
 			return IsActive(typeof(TState));
@@ -424,11 +404,8 @@ namespace Beatrate.PeachFSM
 
 				HierarchyNode hierarchyNode = hierarchyNodes[stateIndices[state.IdentifierType]];
 				declarationControl.Clear();
-				if(state.IsComplex)
-				{
-					state.DeclareStructure(declarationControl);
-				}
-				
+				state.DeclareStructure(declarationControl);
+
 				for(int childIndex = 0; childIndex < declarationControl.Children.Count; ++childIndex)
 				{
 					Base child = declarationControl.Children[childIndex];
@@ -454,9 +431,6 @@ namespace Beatrate.PeachFSM
 			}
 		}
 
-		/// <summary>
-		/// Trigger initial state.
-		/// </summary>
 		public void Start()
 		{
 			if(IsActive(rootState))
@@ -467,9 +441,6 @@ namespace Beatrate.PeachFSM
 			ChangeTo(rootState);
 		}
 
-		/// <summary>
-		/// Exit all states.
-		/// </summary>
 		public void Stop()
 		{
 			if(!IsActive(rootState))
@@ -480,10 +451,6 @@ namespace Beatrate.PeachFSM
 			PopStatesUpToDepth(0);
 		}
 
-		/// <summary>
-		/// Update active states.
-		/// </summary>
-		/// <param name="updateMode">Current update mode</param>
 		public void Update(TUpdateMode updateMode)
 		{
 			if(!IsActive(rootState))
@@ -494,10 +461,6 @@ namespace Beatrate.PeachFSM
 			ProcessUpdates(updateMode);
 		}
 
-		/// <summary>
-		/// Force transition to specified state.
-		/// </summary>
-		/// <typeparam name="TState">State type</typeparam>
 		public void ChangeTo<TState>() where TState : Base
 		{
 			var control = GetControl();
@@ -506,11 +469,6 @@ namespace Beatrate.PeachFSM
 			RecycleControl(control);
 		}
 
-		/// <summary>
-		/// Raise event on active states.
-		/// </summary>
-		/// <typeparam name="TEvent">Event type</typeparam>
-		/// <param name="e">Event</param>
 		public void React<TEvent>(TEvent e)
 		{
 			var control = GetControl();
@@ -532,6 +490,7 @@ namespace Beatrate.PeachFSM
 					state.React(control, e);
 					ProcessTransitions(control);
 				}
+				
 			}
 
 			BeListPool<Base>.Return(stateStack);

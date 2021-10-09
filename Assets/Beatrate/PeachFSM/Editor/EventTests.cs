@@ -37,7 +37,7 @@ namespace Beatrate.PeachFSM.Tests
 
 		public struct Event
 		{
-
+			public int A;
 		}
 
 		[Test]
