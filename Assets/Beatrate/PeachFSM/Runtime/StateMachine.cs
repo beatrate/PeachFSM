@@ -490,10 +490,9 @@ namespace Beatrate.PeachFSM
 					state.React(control, e);
 					ProcessTransitions(control);
 				}
-				
 			}
 
-			BeListPool<Base>.Return(stateStack);
+			BeListPool<Base>.Return(stateStackCopy);
 			RecycleControl(control);
 		}
 
