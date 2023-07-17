@@ -1,5 +1,5 @@
 # PeachFSM
-An in-progress HFSM library for Unity inspired by hfsm2.
+A HFSM library for Unity inspired by hfsm2.
 
 # Features
 
